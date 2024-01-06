@@ -14,11 +14,11 @@ const signup = async (req, res, next) => {
         }
 
         // Check if user with the provided email already exists
-        // const existingUser = await User.findOne({ email });
+        const existingUser = await User.findOne({ where: { email: email } });
 
-        // if (existingUser) {
-        //     return res.status(409).json({ message: "User already exists. Please use a different email address." });
-        // }
+        if (existingUser) {
+            return res.status(409).json({ message: "User already exists, Please Login" });
+        }
 
         const saltRounds = 10;
         bcrypt.hash(password, saltRounds, async (err, hash) => {
@@ -26,7 +26,7 @@ const signup = async (req, res, next) => {
                 return res.status(500).json({ error: "Error hashing password." });
             }
             await User.create({ name, email, phonenumber, password: hash });
-            return res.status(201).json({ message: 'Successfully created new user' });
+            return res.status(201).json({ message: 'Successfuly create new user' });
         });
     } catch (err) {
         console.log(err);

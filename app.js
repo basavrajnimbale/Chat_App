@@ -9,9 +9,13 @@ const sequelize = require('./util/database');
 
 const userRoutes = require('./router/user');
 
-app.use(cors());
+app.use(cors({
+    origin: '*',
+    methods: ["GET", "PUT", "POST", "DELETE"],
+    credentials: true
+}));
 
-app.use(bodyParser.json({extended: false}));
+app.use(bodyParser.json({ extended: false }));
 
 app.use('/user', userRoutes);
 
@@ -20,8 +24,8 @@ app.use('/user', userRoutes);
 // })
 
 sequelize.sync()
-.then(result => {
-    console.log("table created");
-    app.listen(3000);
-})
-.catch(err => console.log(err));
+    .then(result => {
+        console.log("table created");
+        app.listen(3000);
+    })
+    .catch(err => console.log(err));
