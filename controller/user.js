@@ -1,5 +1,6 @@
 const User = require('../model/users');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 function isStringInvalid(string) {
     return string === undefined || string.length === 0;
@@ -34,6 +35,38 @@ const signup = async (req, res, next) => {
     }
 };
 
+function generateAccessToken (id, name) {
+    return jwt.sign({ userId: id, name: name }, process.env.TOKEN_SECRET)
+}
+
+const login = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        if (isStringInvalid(email) || isStringInvalid(password)) {
+            return res.status(400).json({ message: 'Email id or password missing', success: false })
+        }
+        const user = await User.findAll({ where: { email } })
+        if (user.length > 0) {
+            bcrypt.compare(password, user[0].password, (err, result) => {
+                if (err) {
+                    res.status(500).json({ success: false, message: 'Something wend wrong' })
+                }
+                if (result == true) {
+                    res.status(200).json({ success: true, message: "user logged in successfully", token: generateAccessToken(user[0].id, user[0].name) })
+                }
+                else {
+                    return res.status(401).json({ success: false, message: 'password is incorrect' })
+                }
+            })
+        } else {
+            return res.status(404).json({ success: false, message: 'user doesnot exitst' })
+        }
+    } catch (err) {
+        res.status(500).json({ message: err, success: false })
+    }
+}
+
 module.exports = {
     signup,
+    login
 };

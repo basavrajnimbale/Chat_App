@@ -15,6 +15,7 @@ async function login(e) {
         if (response.status === 200) {
             alert(response.data.message);
             console.log(response.data);
+            localStorage.setItem('token', response.data.token)
         } else {
             throw new Error(response.data.message);
         }
