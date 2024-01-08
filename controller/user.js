@@ -1,6 +1,7 @@
 const User = require('../model/users');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const Chat = require('../model/chats')
 
 function isStringInvalid(string) {
     return string === undefined || string.length === 0;
@@ -66,7 +67,21 @@ const login = async (req, res) => {
     }
 }
 
+const saveChat = async (req, res, next) => {
+    try{
+        const { message } = req.body;
+        const result = await Chat.create({ message, userId: req.user.id })
+        console.log(result);
+        res.status(201).json({result})
+    } 
+    catch(err){
+        console.log(err);
+        res.status(500).json({ message: err, success: false });
+    }
+}
+
 module.exports = {
     signup,
-    login
+    login, 
+    saveChat
 };

@@ -16,6 +16,7 @@ async function login(e) {
             alert(response.data.message);
             console.log(response.data);
             localStorage.setItem('token', response.data.token)
+            window.location.href = "/views/chat.html"
         } else {
             throw new Error(response.data.message);
         }

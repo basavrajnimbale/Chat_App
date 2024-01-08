@@ -6,6 +6,9 @@ dotenv.config()
 
 const path = require('path');
 
+const User = require('./model/users');
+const Chat = require('./model/chats');
+
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const sequelize = require('./util/database');
@@ -27,6 +30,9 @@ app.use(pageRoutes);
 app.use((req, res) =>{
     res.sendFile(path.join(__dirname,`${req.url}`))
 })
+
+Chat.belongsTo(User, { constraints: true, onDelete: 'CASCADE' });
+User.hasMany(Chat);
 
 sequelize.sync()
     .then(result => {
