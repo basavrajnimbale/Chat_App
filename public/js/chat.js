@@ -13,3 +13,13 @@ sendbtn.onclick = async () => {
         console.log(err);
     }
 }
+
+window.addEventListener('DOMContentLoaded', async () => {
+    try {
+        const response  = await axios.get('http://localhost:3000/group/chats');
+        console.log(response);
+    }
+    catch (err) {
+        console.log(err);
+    }
+})

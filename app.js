@@ -14,7 +14,8 @@ const cors = require('cors');
 const sequelize = require('./util/database');
 
 const userRoutes = require('./router/user');
-const pageRoutes = require('./router/page')
+const pageRoutes = require('./router/page');
+const groupRoutes = require('./router/chat')
 
 app.use(cors({
     origin: '*',
@@ -25,6 +26,7 @@ app.use(cors({
 app.use(bodyParser.json({ extended: false }));
 
 app.use('/user', userRoutes);
+app.use('/group', groupRoutes);
 app.use(pageRoutes);
 
 app.use((req, res) =>{
