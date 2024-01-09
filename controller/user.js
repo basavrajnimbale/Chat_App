@@ -70,8 +70,8 @@ const login = async (req, res) => {
 const saveChat = async (req, res, next) => {
     try{
         const { message } = req.body;
-        const result = await Chat.create({ message, userId: req.user.id })
-        console.log(result);
+        const result = await Chat.create({ message, userId: req.user.id, username: req.user.name })
+        // console.log(result);
         res.status(201).json({result})
     } 
     catch(err){

@@ -6,12 +6,12 @@ const bcrypt = require('bcrypt');
 const getChats = async (req, res, next) => {
     try{
         const message = await Chat.findAll()
-        console.log(message);
+        // console.log(message);
         res.status(201).json(message)
     }
-    catch{
-        console.error(err);
-        res.status(500).json({ error: 'An error occurred while feching the message.' });
+    catch(err){
+        console.log(err);
+        return res.status(500).json({ error: "Internal server error." });
     }
 }
 
