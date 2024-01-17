@@ -2,6 +2,7 @@ const User = require('../model/users');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const Chat = require('../model/chats')
+const { Op } = require('sequelize');
 
 function isStringInvalid(string) {
     return string === undefined || string.length === 0;
@@ -80,8 +81,61 @@ const saveChat = async (req, res, next) => {
     }
 }
 
+const getUsers = async (req, res, next) => {
+    try {
+        const allUser = await User.findAll({ where: { id: { [Op.ne]: req.user.id } } })
+        res.status(200).json(allUser);
+    }
+    catch (err) {
+        console.log(err);
+        res.status(500).json({ "message": "Something went wrong!", "Error": err });
+    }
+}
+
+const getGroups = async (req, res, next) => {
+    try {
+        const groups = await req.user.getGroups();
+        res.status(200).json({ "message": "success", groups });
+    }
+    catch (err) {
+        res.status(500).json({ "message": "Something went wrong!", "Error": err });
+    }
+}
+
+const getChats = async (req, res, next) => {
+    try{
+
+        const totalChats = await Chat.count();
+        let lastId = req.query.id;
+        // console.log(req.query.id);
+        if(lastId === undefined){
+            lastId = -1;
+        }
+        console.log(lastId);
+        const message = await Chat.findAll({where: { id: { [Op.gt]: lastId }}, attributes : ['id', 'message', 'username']})
+        // console.log(message);
+        res.status(201).json(message)
+
+        // console.log(totalChats, lastId);
+        // res.json(
+        //     {
+        //         "chats": await Chat.findAll({ where: { id: { [Op.gt]: lastId } }, OFFSET: totalChats - 10, attributes: ['id', 'sender', 'message'] }),
+        //         "oldChats": totalChats > 10
+        //     }
+        // );
+    }
+    catch(err){
+        console.log(err);
+        return res.status(500).json({ error: "Internal server error." });
+    }
+}
+
+
 module.exports = {
     signup,
     login, 
-    saveChat
+    saveChat,
+    getUsers,
+    getGroups,
+    getChats
 };

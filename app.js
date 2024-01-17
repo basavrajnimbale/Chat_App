@@ -8,6 +8,8 @@ const path = require('path');
 
 const User = require('./model/users');
 const Chat = require('./model/chats');
+const Group = require('./model/group')
+const Member = require('./model/members')
 
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -33,8 +35,14 @@ app.use((req, res) =>{
     res.sendFile(path.join(__dirname,`${req.url}`))
 })
 
-Chat.belongsTo(User, { constraints: true, onDelete: 'CASCADE' });
-User.hasMany(Chat);
+// Chat.belongsTo(User, { constraints: true, onDelete: 'CASCADE' });
+// User.hasMany(Chat);
+
+Chat.belongsTo(Group);
+Group.hasMany(Chat);
+
+User.belongsToMany(Group, { through: Member });
+Group.belongsToMany(User, { through: Member });
 
 sequelize.sync()
     .then(result => {
