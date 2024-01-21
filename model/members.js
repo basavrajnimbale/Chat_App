@@ -11,6 +11,7 @@ const Member = sequelize.define('member',
         },
         name: Sequelize.STRING,
         group: Sequelize.STRING,
+        isAdmin: Sequelize.BOOLEAN
     });
 
 module.exports = Member;

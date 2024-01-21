@@ -12,6 +12,16 @@ router.get('/grpChats', chatController.getGrpChats);
 
 router.post('/newMsg', middleware.authenticate, chatController.sendMsg);
 
-router.get('/allGroup',middleware.authenticate,chatController.getGrps)
+router.get('/allGroup', middleware.authenticate, chatController.getGrps)
+                
+router.get('/allUser', chatController.grpDetails)
 
-module.exports = router;
+router.get('/reqGroup/:id', chatController.grpReq)
+
+router.get('/:id', middleware.authenticate, chatController.addAdmin)
+
+router.get('/findGroupId', middleware.authenticate, chatController.addParticipants)
+
+router.post('/member', middleware.authenticate, chatController.addParticipants);
+
+module.exports = router

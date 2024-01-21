@@ -18,4 +18,8 @@ router.get('/allusers', middleware.authenticate, userController.getUsers);
 
 router.get('/chats', userController.getChats);
 
+router.get('/newUsers', middleware.authenticate, userController.nonGroupMembers);
+
+router.get('/:id', middleware.authenticate, userController.removeParticipant);
+
 module.exports = router;
