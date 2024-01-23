@@ -14,7 +14,6 @@ const getGrpChats = async (req, res, next) => {
             return res.status(404).json({ message: 'Group not found' });
         }
         const chats = await group.getChats();
-        // console.log(chats)
         res.status(200).json({ message: 'Chats fetched', chats ,"group": group.name});
     }
     catch (err) {
@@ -28,7 +27,6 @@ const knowMembers = async (req, res, next) => {
         console.log(req.body);
         const { name, members } = req.body;
         const promises = members.map(part => User.findOne({ where: { name: part } }));
-        // console.log(promises,'array');
         const users = await Promise.all(promises);
         console.log(users,'another one');
         const group = await Group.create({ name, createdBy: req.user.name });
@@ -65,22 +63,16 @@ const grpReq = async (req, res, next) => {
         const { id } = req.params
         const showgrp = await Group.findAll({ where: { id: id } });;
         res.status(201).json(showgrp);
-        // console.log(showgrp)
-    
     } catch (error) {
         console.error("Error fetching group details:", error);
         res.status(500).json({ message: 'Internal server error' });
     }
 };
 
-
 const getGrps = async (req, res, next) => {
     try {
-        const showgrp = await Group.findAll(
-            // attributes: ['name']
-          );;
+        const showgrp = await Group.findAll();
         res.status(201).json(showgrp);
-        // console.log(showgrp)
     }
     catch(err){
         console.log(err)
@@ -94,11 +86,7 @@ const grpDetails = async (req, res, next) => {
         if (!group) {
             return res.status(404).json({ message: 'Group not found' });
         }
-        const member = await Member.findAll({where: {groupId: req.query.id}})
-
-        // const users = await group.getUsers({ attributes: ['id','name', 'isAdmin'] });
-        // console.log(users);
-
+        const member = await Member.findAll({where: {groupId: req.query.id}});
         res.status(200).json({member});
     } catch (error) {
         console.error(error);
@@ -120,11 +108,6 @@ const addAdmin = async (req, res, next) => {
         console.log(userId + 'userId')
         const member = await Member.findByPk(userId);
         const updatedParticipant = await member.update({isAdmin: true});
-        // console.log(userId + 'userrr')
-        // const [participant] = await group.getUsers({ where: { id: userId } });
-        // console.log()
-        // await participant.update({isAdmin: true})
-        // const updatedParticipant = await group.addUser(participant, { through: { isAdmin: true } });
         res.status(200).json({ "message": 'Success', updatedParticipant });
     }
     catch (err) {
@@ -153,13 +136,6 @@ const addParticipants = async (req, res, next) => {
         res.status(500).json({ "message": "Something went wrong!", "Error": err });
     }
 }
-
-
-
-
-
-
-
 
 module.exports = {
     knowMembers,

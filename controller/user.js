@@ -75,7 +75,6 @@ const saveChat = async (req, res, next) => {
     try{
         const { message } = req.body;
         const result = await Chat.create({ message, userId: req.user.id, username: req.user.name })
-        // console.log(result);
         res.status(201).json({result})
     } 
     catch(err){
@@ -109,22 +108,12 @@ const getChats = async (req, res, next) => {
     try{
         const totalChats = await Chat.count();
         let lastId = req.query.id;
-        // console.log(req.query.id);
         if(lastId === undefined){
             lastId = -1;
         }
         console.log(lastId);
         const message = await Chat.findAll({where: { id: { [Op.gt]: lastId }}, attributes : ['id', 'message', 'username']})
-        // console.log(message);
         res.status(201).json(message )
-
-        // console.log(totalChats, lastId);
-        // res.json(
-        //     {
-        //         "chats": await Chat.findAll({ where: { id: { [Op.gt]: lastId } }, OFFSET: totalChats - 10, attributes: ['id', 'sender', 'message'] }),
-        //         "oldChats": totalChats > 10
-        //     }
-        // );
     }
     catch(err){
         console.log(err);
@@ -176,16 +165,6 @@ const removeParticipant = async (req, res, next) => {
         if (!user.member.isAdmin) {
             return res.status(401).json({ "message": "You're not an admin to remove someone from group." });
         }
-        // const userId = req.params.id;
-        // console.log(userId);
-
-        // const usersInGroup = await group.getUsers();
-        // console.log('Users in the group:', usersInGroup);
-
-        // const reqUser = await Member.findOne({ where: { id: userId } });
-        // console.log('User to be removed:', reqUser);
-        // const result = await reqUser.destroy();
-        // console.log(result);
 
         const userId = req.params.id;
         console.log('UserId:', userId);

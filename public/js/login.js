@@ -10,7 +10,7 @@ async function login(e) {
     };
 
     try {
-        const response = await axios.post('http://localhost:3000/user/login', loginDetails);
+        const response = await axios.post('/user/login', loginDetails);
 
         if (response.status === 200) {
             alert(response.data.message);

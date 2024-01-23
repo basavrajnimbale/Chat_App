@@ -5,8 +5,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css">
     <style>
         .custom-margin div {
@@ -30,14 +29,15 @@
             </div>
         </div>
     </nav>
-    <div class="row d-flex">
+    <!-----main div----->
+    <div class="row">
+        <!-- left panel -->
         <div class="col-4 py-1 left-panel px-0 groupList">
             <button class="container btn btn-primary" type="submit" id="createGrp">Create Group</button>
             <div class="groupList2">
                 <h3 class="text-center">Groups</h3>
                 <div class="groups">
                     <ul class="list-group" id="grpList">
-                        <!-- <li class="list-group-item">abcd</li> -->
                     </ul>
                 </div>
             </div>
@@ -46,7 +46,7 @@
             <form id="createGrpForm">
                 <div class="form-group">
                     <label for="name">Enter name</label>
-                    <div class="col-4">
+                    <div class="input-box">
                         <input type="text" class="form-control" name="name" id="name" required />
                     </div>
                 </div>
@@ -68,9 +68,11 @@
                 <button class="btn btn-default" id="cancel" type="button">Cancel</button>
             </form>
         </div>
-        <div class="right col-8 d-none">
-            <div class="navbar navbar-dark bg-dark">
-                <div class="container-fluid">
+        
+        <!-- right panel -->
+        <div class="col-8 right d-none">
+            <div class="navbar navbar-primary bg-primary">
+                <div class="container">
                     <a class="navbar-brand ms-3" href="#">
                         <span class='me-4'><i class='bi bi-people'></i></span>
                         <span id="grpName">Group</span>
@@ -124,7 +126,7 @@
                                         </form>
                                     </div>
                                     <ul class="offcanvas-ul">
-                                        <!-- <li class="offcanvas-li"></li> -->
+
                                     </ul>
                                 </div>
                             </div>
@@ -147,130 +149,7 @@
                 </div>
             </div>
         </div>
-
-
-
-
-
-        <!-- <nav class="navbar navbar-expand-lg bg-dark navbar-dark py-1">
-        <div class="container">
-            <a href="#" class="navbar-brand">Chat App</a>
-            <div class="collapse navbar-collapse" id="navmenu">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a href="/" class="nav-link" id="logoutbtn">Log Out</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav> -->
-
-        <!-- <div class="row d-flex py-2"> -->
-        <!-- <button class="col-3 mb-2 py-1 btn bg-dark text-light" type="button" data-bs-toggle="modal"
-            data-bs-target="#exampleModal" id="createGrp">create new group</button> -->
-
-        <!-- Button trigger modal -->
-        <!-- <div class="row d-flex py-2">
-    <button type="button" class="col-3 mb-2 py-1 btn bg-dark text-light" data-bs-toggle="modal" data-bs-target="#exampleModal">
-        Create new group
-    </button>
-
-    
-    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Create new group</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="create-group">
-                        <lable for="name">Group Name:</lable><br>
-                        <input type="name" name="name" class="form-control" /> 
-                        <lable for="member">Select Member</lable>
-                        <input type="text" class="form-control" name="search_bar" placeholder="Search..." id="search_bar">
-                        <div class="card mt-2">
-                            <ul class="list-group overflow-y-scroll" id="user_list" style="max-height: 30vh;">
-                            </ul>
-                        </div>
-                    </form>
-                           
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary">Save changes</button>
-                </div>
-            </div>
-        </div> -->
-
-        <!--list of group-->
-        <!-- <ul class="linklist">
-        
-    </ul> -->
-
-
-
-        <!-- <section class="row w-100 h-100 d-none d-lg-flex text-bg-danger bg-opacity-25">
-        <div class="col-3  pe-0" style="min-height: 85vh;">
-            <div class="m-3 rounded-3">
-                <div class="btn btn-light form-control bg-dark text-white " data-bs-toggle="modal"
-                    data-bs-target="#group_model" aria-controls="group_model" id="create_groupBtn"> Create
-                    new
-                    group
-                </div>
-            </div>
-
-        </div> -->
-
-        <!-- Models-->
-        <!--Create or Update group -->
-        <!-- <div class="modal fade " data-bs-backdrop="static" data-bs-keyboard="false" id="group_model">
-            <div class="modal-dialog modal-dialog-centered ">
-                <div class="modal-content">
-                    <div class="modal-header d-flex justify-content-center">
-                        <h1 class="modal-title fs-5" id="model_heading">Create new group </h1>
-                    </div>
-                    <div class="modal-body">
-                        <form id="create_group_form">
-                            <div class="mb3">
-                                <label for="members" class="col-form-label">Group Name:</label>
-                                <input type="text" class="form-control" placeholder="Eg:Family Group etc"
-                                    name="group_name" id="group_name" required>
-
-                            </div>
-                            <div class="mb-3">
-                                <label for="members" class="col-form-label">Group Members:</label>
-                                <input type="text" class="form-control" name="search_bar" placeholder="Search..."
-                                    id="search_bar">
-
-                                <div class="card mt-2 d-none">
-                                    <ul class="list-group overflow-y-scroll" id="user_list" style="max-height: 30vh;">
-                                    </ul>
-                                </div>
-
-                            </div>
-                            <div class="mb-3">
-                                <label for="group-description" class="col-form-label">Group description:</label>
-                                <textarea class="form-control" name="group_description"
-                                    id="group_description">You can leave this column</textarea>
-                            </div>
-                            <input type="hidden" class="form-control" name="edit_status" value="false">
-
-                        </form>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
-                            id="modal_closeBtn">Close</button>
-                        <button type="button" class="btn btn-primary" id="model_submibtn">Create Group</button>
-                    </div>
-
-                </div>
-            </div>
-        </div> -->
-
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
-            integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
-            crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.2/axios.min.js"></script>
         <script src="../public/js/chat.js"></script>
 </body>
