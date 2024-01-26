@@ -13,6 +13,10 @@ const getGrpChats = async (req, res, next) => {
         if (!group) {
             return res.status(404).json({ message: 'Group not found' });
         }
+        // const user = await group.getUsers({ where: { id: req.user.id } });
+        // if (!user.length) {
+        //     return res.status(401).json({ "message": "You aren't a participant of this group to view the messages!" })
+        // }
         const chats = await group.getChats();
         res.status(200).json({ message: 'Chats fetched', chats ,"group": group.name});
     }
@@ -51,6 +55,9 @@ const sendMsg = async (req, res, next) => {
         console.log(message, 'group found');
         const result = await group.createChat({ message, username: req.user.name });
         console.log(result);
+        // const io = require('../app');
+        // // console.log(appExport, 'to see what"s inside');
+        // io.on('connection', socket => socket.to(group.name).emit('sent-msgs', result));
         res.status(201).json({ message: "Message sent successfully", result });
     }
     catch (err) {

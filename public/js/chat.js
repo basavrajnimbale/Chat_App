@@ -11,17 +11,41 @@ const leftPnael = document.querySelector('.groupList')
 let selectedGroupId;
 let selectedUserId;
 
+const socket = io();
+socket.on('connect', _ => {
+    console.log(`connected with ${socket.id}`)
+});
+socket.on('sent-msgs', (sender, msg) => {
+    console.log(sender + ' : ' + msg);
+    dummy.innerHTML += `<div class="col-8 mb-1">${sender} : ${msg}`;
+})
 async function sendMsg(grpId) {
     try {
         const message = inputBox.value
-        const response = await axios.post(`/group/newMsg?id=${grpId}`, { message }, { headers: { "Authorization": token } });
+        const { data: { result } }= await axios.post(`/group/newMsg?id=${grpId}`, { message }, { headers: { "Authorization": token } });
+        // console.log(data);
         inputBox.value = '';
-        console.log(response.data);
+        // console.log(response.data);
+        console.log(result)
+        socket.emit('new-msg', result.message, result.groupId, result.userName);
+        dummy.innerHTML += `<div class="col-8 mb-1">You : ${result.message}`;
     }
     catch (err) {
         console.log(err);
     }
 }
+
+function parseJwt (token) {
+    var base64Url = token.split('.')[1];
+    var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+
+    return JSON.parse(jsonPayload);
+}
+console.log(parseJwt(token));
+
 
 async function fetchChats(groupId, event) {
     try {
@@ -32,16 +56,20 @@ async function fetchChats(groupId, event) {
         document.getElementById('grpName').textContent = event.target.parentNode.parentNode.id;
         console.log(event.target.parentNode.parentNode.id);
         dummy.innerHTML = '';
-
+        let sender = parseJwt(token).name;
+        console.log(sender);
         let newMsg = response.data.chats
-        console.log(typeof newMsg);
         newMsg.forEach(chat => {
-            dummy.innerHTML += `<div class="col-8 mb-1">${chat.username} : ${chat.message}</div>`;
-        });
+            console.log(chat);
+            if (chat.username === sender) {
+                dummy.innerHTML += `<div class="col-8 mb-1">You : ${chat.message}</div>`;                
+            }else {
+                dummy.innerHTML += `<div class="col-8 mb-1">${chat.username} : ${chat.message}</div>`;
+            }
+        })
 
         let remainingChat = JSON.parse(localStorage.getItem('messages')) || []
         let newArray = remainingChat.concat(newMsg)
-        console.log(newArray);
         if (newArray.length > 100) {
             const startIndex = newArray.length - 100;
             const lastHundredChats = newArray.slice(startIndex);
@@ -144,6 +172,7 @@ async function showGrp() {
         ul.innerHTML = '';
 
         groupData.forEach(group => {
+            socket.emit('join-group', group.id);
             console.log(group.id + ' groupid');
             ul.innerHTML += `<li class='list-group-item' id='${group.name}' onclick='fetchChats(${group.id}, event)'>
                 <div class='d-flex'><span class='text-size ms-3 me-4'><i class='bi bi-people'></i></span><h3>${group.name}</h3></div></li>`;
