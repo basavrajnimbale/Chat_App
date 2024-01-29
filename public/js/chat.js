@@ -15,20 +15,49 @@ const socket = io();
 socket.on('connect', _ => {
     console.log(`connected with ${socket.id}`)
 });
-socket.on('sent-msgs', (sender, msg) => {
-    console.log(sender + ' : ' + msg);
-    dummy.innerHTML += `<div class="col-8 mb-1">${sender} : ${msg}`;
-})
-async function sendMsg(grpId) {
+// socket.on('sent-msgs', (sender, msg) => {
+//     console.log(sender + ' : ' + msg);
+//     dummy.innerHTML += `<div class="col-8 mb-1">${sender} : ${msg}`;
+// })
+
+socket.on('sent-msgs', (content) => {
+    console.log(content);
+    if (content.format === 'image/jpeg') {
+        dummy.innerHTML += `<div class="col-8 my-1">${content.username}<div class="mt-1 mb-3"><img src="${content.message}" alt="alt" width="200" height="200" class="rounded" /></div></div>`;
+    } else {
+        dummy.innerHTML += `<div class="col-8 my-1">${content.username} : ${content.message}`;
+    }
+});
+async function sendMsg(grpId, e) {
     try {
         const message = inputBox.value
-        const { data: { result } }= await axios.post(`/group/newMsg?id=${grpId}`, { message }, { headers: { "Authorization": token } });
+        // const { data: { result } }= await axios.post(`/group/newMsg?id=${grpId}`, { message }, { headers: { "Authorization": token } });
         // console.log(data);
+        const files = document.getElementById('file').files;
+        const formData = new FormData();
+
+        formData.set('file', files[0]);
+        formData.set('message', message);
+        const headers = {
+            headers: {
+                "Authorization": token,
+                "Content-Type": "multipart/form-data"
+            }
+        };
+        const { data } = await axios.post(`/group/newMsg?id=${grpId}`, formData, headers);
         inputBox.value = '';
         // console.log(response.data);
-        console.log(result)
-        socket.emit('new-msg', result.message, result.groupId, result.userName);
-        dummy.innerHTML += `<div class="col-8 mb-1">You : ${result.message}`;
+        // console.log(result)
+        // socket.emit('new-msg', result.message, result.groupId, result.userName);
+        // dummy.innerHTML += `<div class="col-8 mb-1">You : ${result.message}`;
+        document.getElementById('file').value = '';
+        console.log(data);
+        socket.emit('new-msg', data);
+        let HTMLContent = `<div class="col-8 my-1">You : ${data.message}`;
+        if (data.format === 'image/jpeg') {
+            HTMLContent = `<div class="col-8 my-1">You<div class="mt-1 mb-3"><img src="${data.message}" alt="alt" width="200" height="200" class="rounded" /></div></div>`;
+        }
+        dummy.innerHTML += HTMLContent;
     }
     catch (err) {
         console.log(err);
@@ -44,7 +73,7 @@ function parseJwt (token) {
 
     return JSON.parse(jsonPayload);
 }
-console.log(parseJwt(token));
+// console.log(parseJwt(token));
 
 
 async function fetchChats(groupId, event) {
@@ -60,12 +89,24 @@ async function fetchChats(groupId, event) {
         console.log(sender);
         let newMsg = response.data.chats
         newMsg.forEach(chat => {
-            console.log(chat);
+            console.log(chat.message);
+            let user = chat.username;
+            // console.log(user);
+            // console.log(chat);
             if (chat.username === sender) {
-                dummy.innerHTML += `<div class="col-8 mb-1">You : ${chat.message}</div>`;                
-            }else {
-                dummy.innerHTML += `<div class="col-8 mb-1">${chat.username} : ${chat.message}</div>`;
+            //     dummy.innerHTML += `<div class="col-8 mb-1">You : ${chat.message}</div>`;                
+            // }else {
+            //     dummy.innerHTML += `<div class="col-8 mb-1">${chat.username} : ${chat.message}</div>`;
+            // }
+            user = 'You';
             }
+            let HTMLContent = `<div class="col-8 my-1">${user} : ${chat.message}</div>`;
+            if (chat.format === 'image/jpeg') {
+                HTMLContent = `<div class='col-8 my-1'>${user}<div class="mt-1 mb-3"><img src="${chat.message}" alt="alt" width="300" height="300" class="img-fluid rounded" /></div></div>`;
+            }
+            
+            console.log(HTMLContent);
+            dummy.innerHTML += HTMLContent;
         })
 
         let remainingChat = JSON.parse(localStorage.getItem('messages')) || []
@@ -78,7 +119,7 @@ async function fetchChats(groupId, event) {
         console.log(newArray[newArray.length - 1].id);
         localStorage.setItem('messages', JSON.stringify(newArray));
         localStorage.setItem('lastId', newArray[newArray.length - 1].id);
-        sendbtn.setAttribute('onclick', `sendMsg(${groupId})`);
+        sendbtn.setAttribute('onclick', `sendMsg(${groupId}, event)`);
     }
     catch (err) {
         console.log(err)

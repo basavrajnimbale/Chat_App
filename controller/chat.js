@@ -5,6 +5,8 @@ const Member = require('../model/members')
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const { Op } = require('sequelize');
+const AWS = require('aws-sdk');
+const fs = require('fs')
 
 const getGrpChats = async (req, res, next) => {
     try {
@@ -50,20 +52,44 @@ const sendMsg = async (req, res, next) => {
     try {
         const { id } = req.query;
         console.log(id);
-        const { message } = req.body;
+        // const { message } = req.body;
+        let message = req.body.message;
+        let format = 'text';
+        // let file = req.file;
+
+        // const { message, formData } = req.body;
         const group = await Group.findByPk(id);
         console.log(message, 'group found');
-        const result = await group.createChat({ message, username: req.user.name });
-        console.log(result);
-        // const io = require('../app');
-        // // console.log(appExport, 'to see what"s inside');
-        // io.on('connection', socket => socket.to(group.name).emit('sent-msgs', result));
-        res.status(201).json({ message: "Message sent successfully", result });
+
+        if (req.file) {
+            const readData = fs.readFileSync(`./Images/${req.file.filename}`)
+            console.log(readData);
+            const S3response = await uploadToS3(readData, `Images/${req.user.id}/${req.file.filename}`);
+            console.log(S3response, 'after upload to cloud');
+            message = S3response.Location;
+            format = req.file.mimetype;
+            // console.log(message, format);
+            // res.status(201).json(saveMsg(group, message, req.user.name, format));
+        }
+        console.log(message, format);
+        const result = await group.createChat({ message, username: req.user.name, format});
+
+        res.status(201).json(result);
     }
     catch (err) {
+        console.log('Socket err: ' + err, 'app.js export');
         res.status(500).json({ "message": "Something went wrong!", "Error": err });
     }
 }
+// async function saveMsg(group, message, sender, format) {
+//     try {
+//         return await group.createChat({ message, sender, format});
+//     }catch (err) {
+//         console.log(err, 'in saveMsg function');
+//         return err;
+//     }
+// }
+
 
 const grpReq = async (req, res, next) => {
     try {
@@ -143,6 +169,37 @@ const addParticipants = async (req, res, next) => {
         res.status(500).json({ "message": "Something went wrong!", "Error": err });
     }
 }
+
+const uploadToS3 = (data, filename) => {
+    const BUCKET_NAME = 'expensetracking-app';
+    // console.log(process.env.IAM_USER_KEY, 'in uploadtoS3 function');
+    // console.log(process.env.IAM_USER_SECRET, 'in uploadtoS3 function');
+
+    let s3bucket = new AWS.S3({
+        accessKeyId: process.env.IAM_USER_KEY,
+        secretAccessKey: process.env.IAM_USER_SECRET,
+    })
+
+    var params = {
+        Bucket: BUCKET_NAME,
+        Key: filename,
+        Body: data,
+        ACL: 'public-read'
+    }
+    return new Promise((reslove, reject) => {
+        s3bucket.upload(params, (err, s3response) => {
+            if (err) {
+                console.log('Something went wrong', err)
+                reject(err)
+            }else {
+                console.log('success', s3response)
+                reslove(s3response);
+            }
+        })
+    })
+}
+
+
 
 module.exports = {
     knowMembers,

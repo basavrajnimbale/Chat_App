@@ -16,7 +16,8 @@ const Chat = sequelize.define('chat', {
     username: {
         type:Sequelize.STRING,
         allowNull: false 
-    }
+    },
+    format: Sequelize.STRING
 })
 
 module.exports = Chat;
