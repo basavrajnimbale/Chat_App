@@ -7,18 +7,55 @@ const bcrypt = require('bcrypt');
 const { Op } = require('sequelize');
 const AWS = require('aws-sdk');
 const fs = require('fs')
+const { CronJob } = require("cron");
+const ArchivedMessage = require("../model/archivedChats");
+
+const job = new CronJob("0 0 0 * * *", archiveMessage);
+
+async function archiveMessage() {
+    console.log("Cron job started at", new Date());
+
+    try {
+        const thresholdDate = new Date();
+        thresholdDate.setDate(thresholdDate.getDate() - 1); // 1 day ago
+
+        const oldChats = await Chat.findAll({
+            where: {
+                createdAt: {
+                    [Op.lt]: thresholdDate
+                }
+            },
+        });
+
+        for (const chat of oldChats) {
+            await ArchivedMessage.create({
+                message: chat.message,
+                username: chat.username,
+                format: chat.format,
+                groupId: chat.groupId
+            });
+
+            await chat.destroy();
+        }
+
+        console.log("Cron job completed successfully at", new Date());
+    } catch (error) {
+        console.error("Error in cron job:", error);
+    }
+}
+
+job.start();
 
 const getGrpChats = async (req, res, next) => {
     try {
-        console.log(req.query.id);
         const group = await Group.findOne({ where: { id: req.query.id } } );
         if (!group) {
             return res.status(404).json({ message: 'Group not found' });
         }
-        // const user = await group.getUsers({ where: { id: req.user.id } });
-        // if (!user.length) {
-        //     return res.status(401).json({ "message": "You aren't a participant of this group to view the messages!" })
-        // }
+        const user = await Member.findOne({ where: { UserId: req.user.id } });
+        if (!user) {
+            return res.status(401).json({ "message": "You aren't a participant of this group to view the messages!" })
+        }
         const chats = await group.getChats();
         res.status(200).json({ message: 'Chats fetched', chats ,"group": group.name});
     }
@@ -198,6 +235,8 @@ const uploadToS3 = (data, filename) => {
         })
     })
 }
+
+
 
 
 

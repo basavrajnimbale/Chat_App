@@ -25,7 +25,7 @@ const middleware = require('../middleware/auth');
 
 router.post('/members', middleware.authenticate, chatController.knowMembers);
 
-router.get('/grpChats', chatController.getGrpChats);
+router.get('/grpChats', middleware.authenticate, chatController.getGrpChats);
 
 router.post('/newMsg', upload.single("file"), middleware.authenticate, chatController.sendMsg);
 

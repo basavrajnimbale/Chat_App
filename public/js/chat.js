@@ -79,7 +79,7 @@ function parseJwt (token) {
 async function fetchChats(groupId, event) {
     try {
         selectedGroupId = groupId;
-        const response = await axios.get(`/group/grpChats/?id=${groupId}`);
+        const response = await axios.get(`/group/grpChats/?id=${groupId}`, { headers: { "Authorization": token } });
 
         document.querySelector('.right').classList.remove('d-none');
         document.getElementById('grpName').textContent = event.target.parentNode.parentNode.id;
