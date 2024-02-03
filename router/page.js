@@ -4,6 +4,6 @@ const router = express.Router();
 
 const pageController = require('../controller/page')
 
-router.get('/', pageController.getloginpage)
+router.get('/', pageController.getSignupPage)
 
 module.exports = router;

@@ -15,24 +15,18 @@ const socket = io();
 socket.on('connect', _ => {
     console.log(`connected with ${socket.id}`)
 });
-// socket.on('sent-msgs', (sender, msg) => {
-//     console.log(sender + ' : ' + msg);
-//     dummy.innerHTML += `<div class="col-8 mb-1">${sender} : ${msg}`;
-// })
 
 socket.on('sent-msgs', (content) => {
-    console.log(content);
     if (content.format === 'image/jpeg') {
-        dummy.innerHTML += `<div class="col-8 my-1">${content.username}<div class="mt-1 mb-3"><img src="${content.message}" alt="alt" width="200" height="200" class="rounded" /></div></div>`;
+        dummy.innerHTML += `<div class="col-3 my-1 ">${content.username}<div class="mt-1 mb-3"><img src="${content.message}" alt="alt" width="200" height="200" class="rounded" /></div></div>`;
     } else {
-        dummy.innerHTML += `<div class="col-8 my-1">${content.username} : ${content.message}`;
+        dummy.innerHTML += `<div class="col-3 my-1 ">${content.username} : ${content.message}`;
     }
 });
 async function sendMsg(grpId, e) {
     try {
         const message = inputBox.value
-        // const { data: { result } }= await axios.post(`/group/newMsg?id=${grpId}`, { message }, { headers: { "Authorization": token } });
-        // console.log(data);
+        console.log(message);
         const files = document.getElementById('file').files;
         const formData = new FormData();
 
@@ -45,17 +39,14 @@ async function sendMsg(grpId, e) {
             }
         };
         const { data } = await axios.post(`/group/newMsg?id=${grpId}`, formData, headers);
-        inputBox.value = '';
-        // console.log(response.data);
-        // console.log(result)
-        // socket.emit('new-msg', result.message, result.groupId, result.userName);
-        // dummy.innerHTML += `<div class="col-8 mb-1">You : ${result.message}`;
-        document.getElementById('file').value = '';
         console.log(data);
+        inputBox.value = '';
+        document.getElementById('file').value = '';
+        
         socket.emit('new-msg', data);
-        let HTMLContent = `<div class="col-8 my-1">You : ${data.message}`;
+        let HTMLContent = `<div class="col-3 my-1 ms-auto">You : ${data.message}`;
         if (data.format === 'image/jpeg') {
-            HTMLContent = `<div class="col-8 my-1">You<div class="mt-1 mb-3"><img src="${data.message}" alt="alt" width="200" height="200" class="rounded" /></div></div>`;
+            HTMLContent = `<div class="col-3 my-1 ms-auto">You :<div class="mt-1 mb-3"><img src="${data.message}" alt="alt" width="200" height="200" class="rounded" /></div></div>`;
         }
         dummy.innerHTML += HTMLContent;
     }
@@ -73,78 +64,54 @@ function parseJwt (token) {
 
     return JSON.parse(jsonPayload);
 }
-// console.log(parseJwt(token));
-
 
 async function fetchChats(groupId, event) {
     try {
+        sendbtn.setAttribute('onclick', `sendMsg(${groupId}, event)`);
         selectedGroupId = groupId;
         const response = await axios.get(`/group/grpChats/?id=${groupId}`, { headers: { "Authorization": token } });
-
+        console.log(response.data.message)
         document.querySelector('.right').classList.remove('d-none');
         document.getElementById('grpName').textContent = event.target.parentNode.parentNode.id;
         console.log(event.target.parentNode.parentNode.id);
         dummy.innerHTML = '';
         let sender = parseJwt(token).name;
         console.log(sender);
-        let newMsg = response.data.chats
+        let newMsg = response.data.chats;
         newMsg.forEach(chat => {
-            console.log(chat.message);
             let user = chat.username;
-            // console.log(user);
-            // console.log(chat);
             if (chat.username === sender) {
-            //     dummy.innerHTML += `<div class="col-8 mb-1">You : ${chat.message}</div>`;                
-            // }else {
-            //     dummy.innerHTML += `<div class="col-8 mb-1">${chat.username} : ${chat.message}</div>`;
-            // }
-            user = 'You';
+                user = 'You';
             }
-            let HTMLContent = `<div class="col-8 my-1">${user} : ${chat.message}</div>`;
+            let sideClass = user === 'You' ? "ms-auto" : "me-auto";
+
+            let HTMLContent = `<div class="col-3 my-1 ${sideClass}">${user} : ${chat.message}</div>`;
+            
             if (chat.format === 'image/jpeg') {
-                HTMLContent = `<div class='col-8 my-1'>${user}<div class="mt-1 mb-3"><img src="${chat.message}" alt="alt" width="300" height="300" class="img-fluid rounded" /></div></div>`;
+                HTMLContent = `<div class='col-3 my-1 ${sideClass}'>${user} :<div class="mt-1 mb-3"><img src="${chat.message}" alt="alt" width="200" height="200" class="rounded" /></div></div>`;
             }
             
-            console.log(HTMLContent);
             dummy.innerHTML += HTMLContent;
-        })
-
-        let remainingChat = JSON.parse(localStorage.getItem('messages')) || []
-        let newArray = remainingChat.concat(newMsg)
-        if (newArray.length > 100) {
-            const startIndex = newArray.length - 100;
-            const lastHundredChats = newArray.slice(startIndex);
-            newArray = lastHundredChats;
+            
+        });
+    } catch (error) {
+        if (error.response && error.response.status === 401) {
+            alert("You aren't a participant of this group to view the messages!");
+        } else {
+            console.log(error);
         }
-        console.log(newArray[newArray.length - 1].id);
-        localStorage.setItem('messages', JSON.stringify(newArray));
-        localStorage.setItem('lastId', newArray[newArray.length - 1].id);
-        sendbtn.setAttribute('onclick', `sendMsg(${groupId}, event)`);
-    }
-    catch (err) {
-        console.log(err)
     }
 }
 
-let interval;
-
-// Start the interval
-interval = setInterval(function () {
-    fetchChats(lastId);
-    console.log(lastId)
-}, 1000);
-
-// To stop the interval (clear it)
-clearInterval(interval);
-
-let createGrp = document.getElementById('createGrp');
+ let createGrp = document.getElementById('createGrp');
 createGrp.onclick = async () => {
     try {
         const { data } = await axios.get('/user/allusers', { headers: { "Authorization": token } });
         console.log(data);
-        document.querySelector('.groupList').classList.toggle('d-none');
+        document.querySelector('.groupList2').classList.toggle('d-none');
         document.querySelector('.group').classList.toggle('d-none')
         const userList = document.querySelector('#userList');
+        userList.innerHTML = '';
 
         data.forEach((user, index) => {
             userList.innerHTML += `<li class="list-group-item"><div class="form-check">
@@ -160,8 +127,8 @@ createGrp.onclick = async () => {
 // click on cross button
 const cancelBtn = document.getElementById('cancel');
 cancelBtn.onclick = (e) => {
-    document.querySelector('.groupList').classList.toggle('d-none');
-    form.classList.toggle('d-none');
+    document.querySelector('.groupList2').classList.toggle('d-none');
+    document.querySelector('.group').classList.toggle('d-none');
     showGrp();
 }
 
@@ -174,7 +141,6 @@ async function oldForm(e) {
     try {
         e.preventDefault();
         console.log(e.target);
-        // const name = e.target.name.value;
         const name = form.querySelector('#name').value;
         console.log(name);
         const members = [];
@@ -192,8 +158,8 @@ async function oldForm(e) {
             console.log(groupDetails);
             const { data } = await axios.post('/group/members', groupDetails, { headers: { "Authorization": token } });
             console.log(data);
-            document.querySelector('.groupList').classList.toggle('d-none');
-            form.classList.toggle('d-none');
+            document.querySelector('.groupList2').classList.toggle('d-none');
+            document.querySelector('.group').classList.toggle('d-none');
             showGrp();
         }
     }
@@ -215,8 +181,8 @@ async function showGrp() {
         groupData.forEach(group => {
             socket.emit('join-group', group.id);
             console.log(group.id + ' groupid');
-            ul.innerHTML += `<li class='list-group-item' id='${group.name}' onclick='fetchChats(${group.id}, event)'>
-                <div class='d-flex'><span class='text-size ms-3 me-4'><i class='bi bi-people'></i></span><h3>${group.name}</h3></div></li>`;
+            ul.innerHTML += `<li class='list-group-item grouptitle' id='${group.name}' onclick='fetchChats(${group.id}, event)'>
+                <div class='d-flex'><span class='text-size ms-2 me-4'><i class='bi bi-people'></i></span><h5>${group.name}</h5></div></li>`;
         });
     } catch (error) {
         console.error("Error fetching group data:", error);
@@ -225,7 +191,6 @@ async function showGrp() {
 
 const threeDotsIcon = document.querySelector('.bi-three-dots-vertical');
 threeDotsIcon.addEventListener('click', grpDetails)
-
 
 async function grpDetails() {
     try {
@@ -367,42 +332,6 @@ document.getElementById('logoutbtn').onclick = () => {
 
 window.addEventListener('DOMContentLoaded', async () => {
     showGrp();
-    dummy.innerHTML = '';
-
-    if (localStorage.getItem('messages')) {
-        remainingChat = localStorage.getItem('messages');
-        remainingChat = JSON.parse(remainingChat);
-
-        if (remainingChat.length) {
-            remainingChat.forEach(chat => {
-                dummy.innerHTML += `<div class="col-8 mb-1">${chat.username} : ${chat.message}</div>`;
-            });
-
-            lastId = remainingChat[remainingChat.length - 1].id;
-            console.log(lastId);
-            localStorage.setItem('lastId', remainingChat[remainingChat.length - 1].id);
-        }
-    } else {
-        try {
-            const response = await axios.get(`/user/chats`);
-            remainingChat = response.data;
-
-            if (remainingChat.length > 100) {
-                const startIndex = remainingChat.length - 100;
-                const lastHundredChats = remainingChat.slice(startIndex);
-                remainingChat = lastHundredChats;
-            }
-
-            remainingChat.forEach(chat => {
-                dummy.innerHTML += `<div class="col-8 mb-1">${chat.username} : ${chat.message}</div>`;
-            });
-
-            localStorage.setItem('messages', JSON.stringify(remainingChat));
-            localStorage.setItem('lastId', remainingChat[remainingChat.length - 1].id);
-        } catch (error) {
-            console.error('Error fetching chats:', error);
-        }
-    }
 });
 
 

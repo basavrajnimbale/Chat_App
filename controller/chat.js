@@ -18,6 +18,7 @@ async function archiveMessage() {
     try {
         const thresholdDate = new Date();
         thresholdDate.setDate(thresholdDate.getDate() - 1); // 1 day ago
+        console.log(thresholdDate)
 
         const oldChats = await Chat.findAll({
             where: {
@@ -33,7 +34,7 @@ async function archiveMessage() {
                 username: chat.username,
                 format: chat.format,
                 groupId: chat.groupId
-            });
+            });``
 
             await chat.destroy();
         }
@@ -43,7 +44,6 @@ async function archiveMessage() {
         console.error("Error in cron job:", error);
     }
 }
-
 job.start();
 
 const getGrpChats = async (req, res, next) => {
@@ -52,11 +52,16 @@ const getGrpChats = async (req, res, next) => {
         if (!group) {
             return res.status(404).json({ message: 'Group not found' });
         }
-        const user = await Member.findOne({ where: { UserId: req.user.id } });
-        if (!user) {
-            return res.status(401).json({ "message": "You aren't a participant of this group to view the messages!" })
+        const user = await group.getUsers({ where: { id: req.user.id } });
+        if (!user.length) {
+            return res.status(401).json({ message: "You aren't a participant of this group to view the messages!" })
         }
-        const chats = await group.getChats();
+        let chats = await group.getChats();
+        if (chats.length > 20) {
+            const startIndex = chats.length - 20;
+            const lastTwentyChats = chats.slice(startIndex);
+            chats = lastTwentyChats;
+        }
         res.status(200).json({ message: 'Chats fetched', chats ,"group": group.name});
     }
     catch (err) {
@@ -88,13 +93,8 @@ const knowMembers = async (req, res, next) => {
 const sendMsg = async (req, res, next) => {
     try {
         const { id } = req.query;
-        console.log(id);
-        // const { message } = req.body;
         let message = req.body.message;
         let format = 'text';
-        // let file = req.file;
-
-        // const { message, formData } = req.body;
         const group = await Group.findByPk(id);
         console.log(message, 'group found');
 
@@ -105,28 +105,17 @@ const sendMsg = async (req, res, next) => {
             console.log(S3response, 'after upload to cloud');
             message = S3response.Location;
             format = req.file.mimetype;
-            // console.log(message, format);
-            // res.status(201).json(saveMsg(group, message, req.user.name, format));
         }
-        console.log(message, format);
+        // console.log(message, format);
         const result = await group.createChat({ message, username: req.user.name, format});
 
         res.status(201).json(result);
     }
     catch (err) {
-        console.log('Socket err: ' + err, 'app.js export');
+        console.log( err +'sendMsg');
         res.status(500).json({ "message": "Something went wrong!", "Error": err });
     }
 }
-// async function saveMsg(group, message, sender, format) {
-//     try {
-//         return await group.createChat({ message, sender, format});
-//     }catch (err) {
-//         console.log(err, 'in saveMsg function');
-//         return err;
-//     }
-// }
-
 
 const grpReq = async (req, res, next) => {
     try {
@@ -135,7 +124,7 @@ const grpReq = async (req, res, next) => {
         res.status(201).json(showgrp);
     } catch (error) {
         console.error("Error fetching group details:", error);
-        res.status(500).json({ message: 'Internal server error' });
+        res.status(500).json({ "message": 'Internal server error' });
     }
 };
 
@@ -160,22 +149,20 @@ const grpDetails = async (req, res, next) => {
         res.status(200).json({member});
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Internal server error' });
+        res.status(500).json({ "message": 'Internal server error' });
     }
 };
 
 const addAdmin = async (req, res, next) => {
     try {
         const grpId = req.query.id;
-        console.log(grpId + 'hiiii')
         const group = await Group.findByPk(grpId);
-        const [user] = await group.getUsers({ where: { id: req.user.id } });
+        const [user]= await group.getUsers({ where: { id: req.user.id } });
         console.log('are you an admin?', user.member.isAdmin, user.isAdmin);
         if (!user.member.isAdmin) {
             return res.status(401).json({ "message": "You must be an admin to make others admin." });
         }
         const userId = req.params.id;
-        console.log(userId + 'userId')
         const member = await Member.findByPk(userId);
         const updatedParticipant = await member.update({isAdmin: true});
         res.status(200).json({ "message": 'Success', updatedParticipant });
@@ -209,8 +196,6 @@ const addParticipants = async (req, res, next) => {
 
 const uploadToS3 = (data, filename) => {
     const BUCKET_NAME = 'expensetracking-app';
-    // console.log(process.env.IAM_USER_KEY, 'in uploadtoS3 function');
-    // console.log(process.env.IAM_USER_SECRET, 'in uploadtoS3 function');
 
     let s3bucket = new AWS.S3({
         accessKeyId: process.env.IAM_USER_KEY,
@@ -235,10 +220,6 @@ const uploadToS3 = (data, filename) => {
         })
     })
 }
-
-
-
-
 
 module.exports = {
     knowMembers,

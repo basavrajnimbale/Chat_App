@@ -1,5 +1,4 @@
 const { Server } = require('socket.io');
-const { instrument } = require('@socket.io/admin-ui');
 const express = require('express');
 const http = require('http');
 const path = require('path');
@@ -25,11 +24,7 @@ const groupRoutes = require('./router/chat');
 const app = express();
 const server = http.createServer(app);
 
-const io = new Server(server, {
-    cors: {
-        origin: ["http://localhost:8080","https://admin.socket.io"]
-    }
-});
+const io = new Server(server)
 
 app.use(cors({
     origin: '*',
@@ -60,17 +55,11 @@ io.on('connection', socket => {
         socket.join(group);
     });
 
-    // socket.on('new-msg', (message, group, sender) => {
-    //     console.log(message, group, 'these msgs were newer');
-    //     socket.to(group).emit('sent-msgs', sender, message);
-    // });
     socket.on('new-msg', (content) => {
         console.log(content, content.groupId, 'all-data');
         socket.to(content.groupId).emit('sent-msgs', content);
     })
 });
-
-instrument(io, { auth: false });
 
 sequelize.sync()
     .then(result => {

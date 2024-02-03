@@ -71,18 +71,6 @@ const login = async (req, res) => {
     }
 }
 
-const saveChat = async (req, res, next) => {
-    try{
-        const { message } = req.body;
-        const result = await Chat.create({ message, userId: req.user.id, username: req.user.name })
-        res.status(201).json({result})
-    } 
-    catch(err){
-        console.log(err);
-        res.status(500).json({ message: err, success: false });
-    }
-}
-
 const getUsers = async (req, res, next) => {
     try {
         const allUser = await User.findAll({ where: { id: { [Op.ne]: req.user.id } } })
@@ -91,33 +79,6 @@ const getUsers = async (req, res, next) => {
     catch (err) {
         console.log(err);
         res.status(500).json({ "message": "Something went wrong!", "Error": err });
-    }
-}
-
-const getGroups = async (req, res, next) => {
-    try {
-        const groups = await req.user.getGroups();
-        res.status(200).json({ "message": "success", groups });
-    }
-    catch (err) {
-        res.status(500).json({ "message": "Something went wrong!", "Error": err });
-    }
-}
-
-const getChats = async (req, res, next) => {
-    try{
-        const totalChats = await Chat.count();
-        let lastId = req.query.id;
-        if(lastId === undefined){
-            lastId = -1;
-        }
-        console.log(lastId);
-        const message = await Chat.findAll({where: { id: { [Op.gt]: lastId }}, attributes : ['id', 'message', 'username']})
-        res.status(201).json(message )
-    }
-    catch(err){
-        console.log(err);
-        return res.status(500).json({ error: "Internal server error." });
     }
 }
 
@@ -154,12 +115,9 @@ const nonGroupMembers = async (req, res, next) => {
 const removeParticipant = async (req, res, next) => {
     try {
         const grpId = req.query.id;
-        console.log(grpId + 'hellooo');
         const group = await Group.findByPk(grpId);
-        console.log(req.user);
         
         const [user] = await group.getUsers({ where: { id: req.user.id } });
-        console.log(user);
 
         console.log('are you an admin?',user.isAdmin, user.member.isAdmin);
         if (!user.member.isAdmin) {
@@ -189,10 +147,7 @@ const removeParticipant = async (req, res, next) => {
 module.exports = {
     signup,
     login, 
-    saveChat,
     getUsers,
-    getGroups,
-    getChats,
     nonGroupMembers,
     removeParticipant
 };

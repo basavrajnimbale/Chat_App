@@ -1,4 +1,4 @@
-exports.getloginpage = (req, res, next) => {
+exports.getSignupPage = (req, res, next) => {
     res.sendFile('/signup.html', {root: 'views'}, (err) => {
         if (err) {
             console.error(err);

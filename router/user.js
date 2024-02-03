@@ -10,13 +10,7 @@ router.post('/signup', userController.signup);
 
 router.post('/login', userController.login)
 
-router.post('/chat', middleware.authenticate, userController.saveChat);
-
-router.get('/groups', middleware.authenticate, userController.getGroups);
-
 router.get('/allusers', middleware.authenticate, userController.getUsers);
-
-router.get('/chats', userController.getChats);
 
 router.get('/newUsers', middleware.authenticate, userController.nonGroupMembers);
 
